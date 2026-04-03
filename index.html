@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>明视 · AI互动展柜高端手册</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400;700&family=Noto+Sans+SC:wght@100;300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --brand-gold: #b89a6b; --brand-dark: #000; --brand-bg: #fff; }
+        body { font-family: 'Noto Sans SC', sans-serif; background-color: #f2f2f2; color: var(--brand-dark); margin: 0; padding: 20px 0; }
+        .serif { font-family: 'Noto Serif SC', serif; }
+        
+        .page-container { width: 595px; height: 842px; background: white; margin: 40px auto; position: relative; overflow: hidden; box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; }
+
+        /* 杂志风公共样式 */
+        .magazine-decor-top { position: absolute; top: 30px; right: 40px; font-size: 9px; letter-spacing: 2px; color: #999; text-transform: uppercase; font-weight: 300; z-index: 10; }
+        
+        /* 交互页样式 */
+        .screen-stage { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; z-index: 10; padding: 10px; }
+        .screen-wrapper-fixed { 
+            width: 390px; height: 520px; background: #000; position: relative; overflow: hidden; 
+            border-radius: 8px; border: 6px solid #1a1a1a; box-shadow: 0 40px 70px -15px rgba(0,0,0,0.15);
+        }
+        
+        .video-container { width: 100%; height: 100%; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+        .video-inner { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.5s ease; }
+        
+        /* 灵动交互子页专用：稍微向左偏置以在黑色边框内视觉居中 */
+        #content0 .video-inner { transform: translateX(-4%); width: 108%; } 
+
+        .ai-input-glass {
+            position: absolute; bottom: 25px; left: 50%; transform: translateX(-50%); width: 88%;
+            background: rgba(184, 154, 107, 0.2); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 10px; padding: 10px 16px;
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+        }
+        
+        /* 发送按钮样式 */
+        .send-btn {
+            width: 28px; height: 28px; background: var(--brand-gold); border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: transform 0.2s; border: none;
+        }
+        .send-btn:active { transform: scale(0.9); }
+
+        /* 智慧管理模块样式 */
+        .management-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 12px; margin-bottom: 8px; width: 100%; text-align: left; }
+        .management-tag { font-size: 8px; color: var(--brand-gold); border: 1px solid var(--brand-gold); padding: 1px 4px; border-radius: 3px; text-transform: uppercase; margin-bottom: 4px; display: inline-block; }
+
+        /* 导航按钮 - 升级为中英文 */
+        .btn-group-serif { display: flex; height: 95px; background: #fff; border-top: 1px solid #f0f0f0; }
+        .fashion-btn-serif { 
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border-right: 1px solid #f9f9f9; font-family: 'Noto Serif SC', serif;
+            cursor: pointer;
+        }
+        .fashion-btn-serif .num { font-size: 9px; opacity: 0.3; margin-bottom: 2px; }
+        .fashion-btn-serif .label-cn { font-size: 13px; letter-spacing: 2px; color: #999; }
+        .fashion-btn-serif .label-en { font-size: 8px; letter-spacing: 1px; color: #ccc; text-transform: uppercase; margin-top: 2px; font-family: 'Noto Sans SC'; }
+        
+        .fashion-btn-serif.active .label-cn { color: var(--brand-gold); font-weight: 600; }
+        .fashion-btn-serif.active .label-en { color: var(--brand-gold); opacity: 0.8; }
+        .fashion-btn-serif.active .num { opacity: 1; color: var(--brand-gold); }
+
+        .tab-content { display: none; width: 100%; height: 100%; }
+        .tab-content.active { display: block; }
+        
+        /* 产品展示页专有样式 */
+        .product-nav-btn { 
+            cursor: pointer; transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1); 
+            padding: 16px 10px; border-radius: 12px; position: relative; overflow: hidden;
+        }
+        .product-nav-btn.active { 
+            background: linear-gradient(135deg, rgba(184, 154, 107, 0.15) 0%, rgba(184, 154, 107, 0.05) 100%);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            box-shadow: inset 0 0 0 1px rgba(184, 154, 107, 0.2);
+        }
+        .product-image-container { transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); display: none; transform-origin: center bottom; }
+        .product-image-container.active { display: block; animation: zoomInFade 0.8s forwards; }
+
+        @keyframes zoomInFade { 
+            from { opacity: 0; transform: translateY(20px) scale(0.95); } 
+            to { opacity: 1; transform: translateY(0) scale(1); } 
+        }
+
+        .full-bg-page { background: #000; position: relative; color: white; }
+        .full-bg-overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%); }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: COVER (封面) - 保持不变 -->
+    <div class="page-container">
+        <div class="h-[65%] relative bg-black overflow-hidden">
+            <video id="homeVideo" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+        </div>
+        <div class="h-[35%] p-16 flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="w-14 h-[2px] bg-[#b89a6b]"></div>
+                <div>
+                    <h1 class="text-[44px] font-light tracking-[4px] serif leading-tight">AI互动展柜</h1>
+                    <p class="text-[#b89a6b] text-[14px] tracking-[8px] serif mt-2 font-light">视界无界 智享展示</p>
+                </div>
+            </div>
+            <div class="flex justify-between items-end border-t border-zinc-100 pt-8 text-[9px] tracking-[5px] text-zinc-400 uppercase font-medium">
+                <span>Smart Interaction Hub</span>
+                <span class="text-[#b89a6b] font-bold">2026 Collection</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: CRAFTSMANSHIP (工艺细节) - 保持此前“重释陈列艺术”修改 -->
+    <div class="page-container">
+        <div class="h-[35%] w-full overflow-hidden"><img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/13.jpg" class="w-full h-full object-cover lazy-img"></div>
+        <div class="h-[30%] flex border-y border-zinc-50">
+            <div class="w-1/2 p-12 flex flex-col justify-center">
+                <span class="text-[#b89a6b] text-[10px] tracking-[4px] uppercase font-bold mb-4">Materiality</span>
+                <h3 class="text-2xl serif font-light mb-4">精湛工艺细节</h3>
+                <p class="text-[12px] text-zinc-400 leading-relaxed font-light">精选航空级铝材与定制防眩光玻璃。</p>
+            </div>
+            <div class="w-1/2 bg-zinc-50 overflow-hidden"><img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E7%BB%86%E8%8A%82%E5%9B%BE1.png" class="w-full h-full object-cover lazy-img"></div>
+        </div>
+        <div class="h-[35%] flex">
+            <div class="w-1/2 bg-zinc-50 overflow-hidden"><img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E7%BB%86%E8%8A%82%E5%9B%BE2.png" class="w-full h-full object-cover lazy-img"></div>
+            <div class="w-1/2 p-12 flex flex-col justify-center">
+                <h3 class="text-2xl serif font-light mb-4">重释陈列艺术</h3>
+                <p class="text-[12px] text-zinc-400 leading-relaxed font-light">自研动态显色技术，CRI > 98。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: INTERACTION (交互展示) - 本次重点修改页 -->
+    <div class="page-container relative">
+        <div class="magazine-decor-top">Editorial / No. 01</div>
+        <div class="px-12 pt-16 relative z-10">
+            <h2 id="interactTitle" class="text-[36px] serif font-light tracking-tight">灵动触控 一触即知</h2>
+            <p id="interactSub" class="text-[10px] text-[#b89a6b] tracking-[4px] uppercase font-bold mt-2">Interactive Excellence</p>
+        </div>
+        <div class="screen-stage">
+            <div id="screenWrapper" class="screen-wrapper-fixed">
+                <!-- 1. 灵动交互 -->
+                <div id="content0" class="tab-content active">
+                    <div class="video-container">
+                        <video id="videoInteract" autoplay loop muted playsinline class="video-inner"></video>
+                    </div>
+                </div>
+                
+                <!-- 2. AI 生成 (包含发送按钮和视频切换逻辑) -->
+                <div id="content1" class="tab-content h-full">
+                    <div class="video-container">
+                        <video id="videoAI" autoplay loop muted playsinline class="video-inner"></video>
+                        <div class="ai-input-glass">
+                            <span class="text-white text-[10px] opacity-60">✦ 正在生成创意视觉...</span>
+                            <button onclick="changeAIVideo()" class="send-btn">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M22 2L11 13M22 2L15 22L11 13M11 13L2 9L22 2" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 3. 智慧管理 -->
+                <div id="content2" class="tab-content h-full bg-[#0a0a0a] flex flex-col p-8 overflow-y-auto">
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-[10px] text-zinc-500 tracking-[2px]">SMART CONTROL HUB</span>
+                        <div class="w-8 h-px bg-zinc-800"></div>
+                    </div>
+                    
+                    <div class="management-card">
+                        <span class="management-tag">Management</span>
+                        <h4 class="text-white text-[13px] serif mb-1">管理后台</h4>
+                        <p class="text-zinc-500 text-[9px] leading-tight font-light">
+                            · 中控管理平台可视化操作<br>
+                            · 多柜批量一键任务分发<br>
+                            · 远程内容秒级同步更新
+                        </p>
+                    </div>
+
+                    <div class="management-card border-gold-500/20 bg-[#b89a6b]/5 my-2">
+                        <span class="management-tag">AI Advertising</span>
+                        <h4 class="text-white text-[13px] serif mb-2 text-center">AI 广告生成</h4>
+                        <div class="bg-black/40 rounded border border-white/10 p-3 mb-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-[#b89a6b]"></div>
+                                <span class="text-white/40 text-[8px]">输入产品关键词...</span>
+                            </div>
+                            <div class="text-[10px] text-white/80 font-light italic">“法式复古、流线型、金色丝绸质感”</div>
+                        </div>
+                    </div>
+
+                    <div class="management-card">
+                        <span class="management-tag">Data Analysis</span>
+                        <h4 class="text-white text-[13px] serif mb-2">数据分析</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-end">
+                                <span class="text-zinc-400 text-[8px]">交互点击量</span>
+                                <span class="text-[#b89a6b] text-[10px]">1,284次</span>
+                            </div>
+                            <div class="w-full bg-zinc-900 h-1 rounded-full overflow-hidden">
+                                <div class="bg-[#b89a6b] h-full w-[70%]"></div>
+                            </div>
+                            <div class="flex justify-between items-end">
+                                <span class="text-zinc-400 text-[8px]">平均浏览时长</span>
+                                <span class="text-[#b89a6b] text-[10px]">142.5s</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 导航按钮升级：中英文结合 -->
+        <div class="btn-group-serif">
+            <button onclick="switchTab(0, '灵动触控 一触即知', 'Interactive Excellence')" class="fashion-btn-serif active" id="btn0">
+                <span class="num">I</span>
+                <span class="label-cn">灵动交互</span>
+                <span class="label-en">Dynamic Interaction</span>
+            </button>
+            <button onclick="switchTab(1, 'AI 视觉 创意无界', 'AI Generative Vision')" class="fashion-btn-serif" id="btn1">
+                <span class="num">II</span>
+                <span class="label-cn">AI 生成</span>
+                <span class="label-en">AI Generation</span>
+            </button>
+            <button onclick="switchTab(2, '智慧后台 极简管控', 'Smart Management')" class="fashion-btn-serif" id="btn2">
+                <span class="num">III</span>
+                <span class="label-cn">智慧管理</span>
+                <span class="label-en">Smart Management</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- PAGE 4: PRODUCT DISPLAY (产品展示) - 保持不变 -->
+    <div class="page-container bg-[#fff]">
+        <div class="magazine-decor-top">Catalogue / Collection</div>
+        <div class="p-12 pb-2">
+            <h2 class="text-[32px] serif font-light tracking-[4px] text-[#222]">产品展示</h2>
+            <div class="w-12 h-[1px] bg-[#b89a6b] mt-4"></div>
+        </div>
+        <div class="h-[540px] flex flex-col items-center justify-center relative">
+            <div id="prodImg0" class="product-image-container">
+                <img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E7%81%B5%E5%8A%A81.png" class="h-[440px] w-auto object-contain lazy-img">
+            </div>
+            <div id="prodImg1" class="product-image-container">
+                <img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E5%9F%BA%E7%A1%801.png" class="h-[440px] w-auto object-contain lazy-img">
+            </div>
+            <div id="prodImg2" class="product-image-container active">
+                <img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E5%A5%A2%E5%8D%8E1.png" class="h-[440px] w-auto object-contain lazy-img">
+            </div>
+            <div id="specInfo" class="absolute bottom-4 transition-all duration-700 transform text-center">
+                <div id="specTitle" class="serif text-[13px] text-[#b89a6b] tracking-[1px] font-medium">屏幕规格：--</div>
+                <div id="specDim" class="serif text-[11px] text-zinc-400 mt-1 tracking-[1px]">高宽深：--</div>
+            </div>
+        </div>
+        <div class="flex-1 flex px-8 pb-10 items-center justify-center gap-4">
+            <div onclick="switchProduct(0)" id="prodNav0" class="product-nav-btn flex-1 flex flex-col items-center">
+                <h3 class="text-[17px] serif font-medium text-zinc-800">灵动款</h3>
+                <span class="text-[8px] tracking-[2px] uppercase text-zinc-400 font-light mt-1">Smart Dynamic</span>
+            </div>
+            <div onclick="switchProduct(1)" id="prodNav1" class="product-nav-btn flex-1 flex flex-col items-center">
+                <h3 class="text-[17px] serif font-medium text-zinc-800">基础款</h3>
+                <span class="text-[8px] tracking-[2px] uppercase text-zinc-400 font-light mt-1">Essential Base</span>
+            </div>
+            <div onclick="switchProduct(2)" id="prodNav2" class="product-nav-btn active flex-1 flex flex-col items-center">
+                <h3 class="text-[17px] serif font-medium text-zinc-800">尊享款</h3>
+                <span class="text-[8px] tracking-[2px] uppercase text-zinc-400 font-light mt-1">Premium Deluxe</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 5: PRIVATE BANKING (私人银行) - 保持不变 -->
+    <div class="page-container full-bg-page">
+        <img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E9%93%B6%E8%A1%8C%E5%9C%BA%E6%99%AF1.png" class="absolute inset-0 w-full h-full object-cover lazy-img">
+        <div class="full-bg-overlay"></div>
+        <div class="relative z-10 h-full flex flex-col justify-end p-16 pb-24">
+            <div class="space-y-6">
+                <div class="w-12 h-[2px] bg-[#b89a6b]"></div>
+                <div>
+                    <h2 class="text-6xl serif font-light tracking-[8px] mb-4">私人银行</h2>
+                    <span class="text-[12px] tracking-[6px] uppercase text-[#b89a6b] font-bold">Private Banking Service</span>
+                </div>
+                <p class="text-lg serif font-light tracking-[4px] text-white/90">守护财富 智享尊贵</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 6: LUXURY RETAIL (奢品专柜) - 保持不变 -->
+    <div class="page-container full-bg-page">
+        <img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E5%A5%A2%E4%BE%88%E5%93%81%E5%B1%95%E7%A4%BA%E5%9C%BA%E6%99%AF1.png" class="absolute inset-0 w-full h-full object-cover lazy-img">
+        <div class="full-bg-overlay"></div>
+        <div class="magazine-decor-top text-white/50">Retail / Space Design</div>
+        <div class="relative z-10 h-full flex flex-col justify-end p-16 pb-24">
+            <div class="space-y-6">
+                <div class="w-12 h-[1px] bg-white/40"></div>
+                <div>
+                    <h2 class="text-7xl serif font-light tracking-[12px] mb-4 text-white">奢品专柜</h2>
+                    <div class="flex items-center gap-3">
+                        <span class="text-[10px] tracking-[5px] uppercase text-[#b89a6b] font-bold">L'Art de Présentation</span>
+                    </div>
+                </div>
+                <p class="text-[16px] serif font-light tracking-[3px] text-white/80 leading-relaxed max-w-[280px]">让展柜，成为门店最好的导购</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 7: PREMIUM DISPLAY (尊享展示) - 保持不变 -->
+    <div class="page-container full-bg-page">
+        <img data-src="https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E5%A5%A2%E4%BE%88%E5%93%81%E5%B1%95%E7%A4%BA%E5%9C%BA%E6%99%AF3.png" class="absolute inset-0 w-full h-full object-cover lazy-img">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+        <div class="magazine-decor-top text-white/40">Exclusive / Showcase</div>
+        <div class="relative z-10 h-full flex flex-col justify-end p-16 pb-24">
+            <div class="space-y-6">
+                <div class="w-14 h-[2px] bg-[#b89a6b]"></div>
+                <h2 class="text-[64px] serif font-light tracking-[12px] mb-2 text-white">尊享展示</h2>
+                <p class="text-[18px] serif font-light tracking-[6px] text-[#b89a6b] uppercase">距离之外 细节之中</p>
+                <div class="pt-8 flex items-center gap-4 text-white/30 text-[9px] tracking-[3px] uppercase">
+                    <span>Precision</span>
+                    <span class="w-1 h-1 rounded-full bg-white/20"></span>
+                    <span>Elegance</span>
+                    <span class="w-1 h-1 rounded-full bg-white/20"></span>
+                    <span>Intelligence</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 定义AI视频库
+        const aiVideos = [
+            "https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E8%A7%86%E9%A2%911.mp4",
+            "https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E6%89%8B%E8%A1%A8.mp4",
+            "https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E8%BF%AA%E5%A5%A5.mp4"
+        ];
+        let currentAIVideoIdx = 0;
+
+        function getRawUrl(url) { 
+            if (!url) return "";
+            if (url.includes("raw.githubusercontent.com")) return url;
+            return url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/"); 
+        }
+        
+        window.onload = () => {
+            const config = {
+                home: "https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/jimeng-2026-04-01-2529-%E5%B0%86%E4%BA%A7%E5%93%81%E4%B8%8E%E8%83%8C%E6%99%AF%E8%9E%8D%E5%90%88%EF%BC%8C%E4%BF%9D%E8%AF%81%E4%BA%A7%E5%93%81%E7%9A%84%E7%BB%86%E8%8A%82%E5%92%8C%E8%83%8C%E6%99%AF%E4%B8%8D%E5%8F%98%EF%BC%8C%E5%B9%B3%E8%A7%86%E8%A7%92%E8%B5%8B%E4%BA%88%E5%85%B6%E8%87%AA%E7%84%B6%E7%9A%84%E5%85%89%E5%BD%B1%EF%BC%8C%E4%BA%A7%E5%93%81%E8%83%8C%E6%99%AF%E5%85%89....mp4",
+                interact: "https://github.com/Harrian-moo/design-assets/blob/main/images/display-case/%E8%B4%B5%E9%87%91%E5%B1%9E.mp4"
+            };
+            
+            const vHome = document.getElementById('homeVideo');
+            if(vHome) vHome.src = getRawUrl(config.home);
+            
+            const vInteract = document.getElementById('videoInteract');
+            if(vInteract) vInteract.src = getRawUrl(config.interact);
+            
+            // 初始化AI视频
+            const vAI = document.getElementById('videoAI');
+            if(vAI) vAI.src = getRawUrl(aiVideos[0]);
+            
+            document.querySelectorAll('.lazy-img').forEach(img => { 
+                const dataSrc = img.getAttribute('data-src');
+                if(dataSrc) img.src = getRawUrl(dataSrc); 
+            });
+
+            switchProduct(2); // 初始化尊享款
+        };
+
+        // 点击发送按钮切换AI生成视频的逻辑
+        function changeAIVideo() {
+            const vAI = document.getElementById('videoAI');
+            if(!vAI) return;
+            
+            currentAIVideoIdx = (currentAIVideoIdx + 1) % aiVideos.length;
+            
+            // 添加淡出效果
+            vAI.style.opacity = '0';
+            setTimeout(() => {
+                vAI.src = getRawUrl(aiVideos[currentAIVideoIdx]);
+                vAI.play();
+                vAI.style.opacity = '1';
+            }, 300);
+        }
+
+        function switchTab(idx, title, sub) {
+            const t = document.getElementById('interactTitle');
+            const s = document.getElementById('interactSub');
+            if(t) t.innerText = title;
+            if(s) s.innerText = sub;
+            
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.fashion-btn-serif').forEach(b => b.classList.remove('active'));
+            
+            const content = document.getElementById(`content${idx}`);
+            const btn = document.getElementById(`btn${idx}`);
+            if(content) content.classList.add('active');
+            if(btn) btn.classList.add('active');
+        }
+
+        function switchProduct(idx) {
+            document.querySelectorAll('.product-image-container').forEach(img => img.classList.remove('active'));
+            const prodImg = document.getElementById(`prodImg${idx}`);
+            if(prodImg) prodImg.classList.add('active');
+            
+            document.querySelectorAll('.product-nav-btn').forEach(nav => nav.classList.remove('active'));
+            const prodNav = document.getElementById(`prodNav${idx}`);
+            if(prodNav) prodNav.classList.add('active');
+
+            const specInfo = document.getElementById('specInfo');
+            const specTitle = document.getElementById('specTitle');
+            const specDim = document.getElementById('specDim');
+
+            if(!specInfo || !specTitle || !specDim) return;
+
+            if(idx === 2) {
+                specTitle.innerText = "屏幕规格：43寸 横版";
+                specDim.innerText = "高宽深：1550mm * 1350mm * 410mm";
+            } else if(idx === 1) {
+                specTitle.innerText = "屏幕规格：43寸 横版";
+                specDim.innerText = "高宽深：1520mm * 1160mm * 410mm";
+            } else if(idx === 0) {
+                specTitle.innerText = "屏幕规格：32寸 竖版";
+                specDim.innerText = "高宽深：1700mm * 600mm * 410mm";
+            }
+            specInfo.classList.add('opacity-100', 'translate-y-0');
+        }
+    </script>
+</body>
+</html>
